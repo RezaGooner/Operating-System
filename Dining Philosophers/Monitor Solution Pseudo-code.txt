@@ -1,0 +1,60 @@
+monitor DiningPhilosophers {
+    enum {THINKING, HUNGRY, EATING} state[N]	    // Enum representing the state of each philosopher
+    condition self[N]								// Condition variables for each philosopher
+
+    // Pickup procedure: called when a philosopher tries to pick up chopsticks
+    procedure pickup(i) {
+        state[i] = HUNGRY  							// Philosopher becomes hungry and wants to eat
+        test(i)  									// Check if the philosopher can start eating
+        if (state[i] != EATING)  					// If the philosopher is not eating yet, wait
+            self[i].wait()  						// Wait until the philosopher can eat
+    }
+
+    // Putdown procedure: called when a philosopher finishes eating
+    procedure putdown(i) {
+        state[i] = THINKING 			 			// Philosopher finishes eating and starts thinking
+        // Test the left and right neighbors to see if they can eat
+        test((i + (N - 1)) % N)  					// Test the left neighbor
+        test((i + 1) % N)  							// Test the right neighbor
+    }
+
+    // Test procedure: checks if a philosopher can start eating
+    procedure test(i) {
+        if (state[(i + (N - 1)) % N] != EATING &&	// Left neighbor is not eating
+            state[i] == HUNGRY &&  					// Philosopher is hungry
+            state[(i + 1) % N] != EATING)  			// Right neighbor is not eating
+        {
+            state[i] = EATING  						// Philosopher can start eating
+            self[i].signal()  						// Signal the philosopher to start eating
+        }
+    }
+
+    // Initialization code: set all philosophers' state to THINKING initially
+    initialization_code() {
+        for i = 0 to N - 1 {
+            state[i] = THINKING 
+        }
+    }
+}
+
+procedure philosopher(i) {
+    while (true) {
+        think()  
+
+        DiningPhilosophers.pickup(i)  			// Philosopher tries to pick up chopsticks
+        eat()
+        DiningPhilosophers.putdown(i)  			// Philosopher puts down chopsticks after eating
+    }
+}
+
+procedure main() {
+    // Create threads for each philosopher
+    for i = 0 to N - 1 {
+        create_thread(philosopher, i)
+    }
+
+    // Wait for all philosopher threads to finish
+    for i = 0 to N - 1 {
+        join_thread(philosopher, i)
+    }
+}
