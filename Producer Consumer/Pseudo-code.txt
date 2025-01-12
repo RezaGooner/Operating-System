@@ -1,46 +1,48 @@
 BUFFER_SIZE = 5
 buffer[BUFFER_SIZE]
-in  = 0
-out = 0
+in  = 0		 // Pointer to the next position for adding an item
+out = 0		// Pointer to the next position for removing an item
 
-semaphore empty = BUFFER_SIZE
-semaphore  full = 0
-semaphore mutex = 1
+semaphore empty = BUFFER_SIZE		// Number of empty slots in the buffer
+semaphore  full = 0			// Number of full slots in the buffer
+semaphore mutex = 1			// To ensure exclusive access to the buffer
 
 procedure producer(){
-  while (true){
-    item = produce_item()
-	
-		wait(empty)
-		wait(mutex)
+	while (true){
+		item = produce_item()
+
+		wait(empty)			// Wait until there is an empty slot
+		wait(mutex)			// Ensure exclusive access to the buffer
 
 		buffer[in] = item
 		in = (in + 1) % BUFFER_SIZE
 
-		signal(mutex)
-		signal(empty)
-  }
+		signal(mutex)			// Release exclusive access
+		signal(empty)			// Increment the count of full slots
+	}
 }
 
 procedure consumer(){
 	while(true){
-		wait(full)
-		wait(mutex)
+		wait(full)			// Wait until there is a full slot
+       		wait(mutex)  			// Ensure exclusive access to the buffer
 
 		item = buffer[out]
 		out = (out - 1) % BUFFER_SIZE
 
-		signal(mutex)
-		signal(full)
+		signal(mutex)			// Release exclusive access
+		signal(full)			// Increment the count of empty slots
 
 		consume_item(item)
 	}
 }
 
 procedure main(){
+	// Create producer and consumer threads
 	create_thread(producer)
 	create_thread(consumer)
 
+	// Wait for the threads to finish (which never happens, as the loops are infinite)
 	join_thread(producer)
 	join_thread(consumer)
 }
