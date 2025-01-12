@@ -1,0 +1,44 @@
+read_count = 0 							// Tracks the number of active readers
+
+semaphore rw_mutex = 1  				// Ensures mutual exclusion for writers (and readers if no reader is active)
+semaphore    mutex = 1  				// Protects access to the read_count variable
+
+procedure writer() {
+	while (true) {
+		wait(rw_mutex)  				// Wait for exclusive access to shared data
+
+        write_data()  
+
+		signal(rw_mutex)  				// Release exclusive access
+	}
+}
+
+procedure reader() {
+	while (true) {
+		wait(mutex) 					 // Lock to safely update read_count
+		read_count = read_count + 1 	 // Increment the number of active readers
+
+		if (read_count == 1)  			// If this is the first reader
+			wait(rw_mutex)  			// Block writers by locking rw_mutex
+
+		signal(mutex)  					// Release the lock on read_count
+
+		read_data()  
+
+		wait(mutex)  					// Lock to safely update read_count
+		read_count = read_count - 1 	// Decrement the number of active readers
+
+		if (read_count == 0)  			// If this was the last reader
+			signal(rw_mutex)  			// Allow writers to proceed by unlocking rw_mutex
+
+		signal(mutex)  					// Release the lock on read_count
+	}
+}
+
+procedure main() {
+	create_thread(writer)  				// Create a thread for the writer
+    create_thread(reader)			    // Create a thread for the reader
+
+    join_thread(writer)  				// Wait for the writer thread to finish
+    join_thread(reader)  				// Wait for the reader thread to finish
+}
