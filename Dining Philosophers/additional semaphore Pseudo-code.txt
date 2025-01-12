@@ -1,0 +1,33 @@
+N = 5  									// Number of philosophers (or chopstick) 
+chopstick[N]  							// Array representing chopsticks; each chopstick is a semaphore
+mutex = 1  								// Semaphore to ensure mutual exclusion when accessing shared resources
+
+										// Initialize all chopsticks as available (value = 1)
+for i = 0 to N - 1:
+	chopstick[i] = 1
+
+procedure philosopher(i) {
+	while(true) {
+		think()  
+
+		wait(mutex)  					// Acquire mutual exclusion to check and pick up chopsticks
+		wait(chopstick[i])  			// Pick up the left chopstick
+		wait(chopstick[(i + 1) % N])  	// Pick up the right chopstick
+		signal(mutex)  					// Release mutual exclusion after picking up chopsticks
+
+		eat()
+
+		signal(chopstick[i])  			// Put down the left chopstick
+		signal(chopstick[(i + 1) % N])  // Put down the right chopstick
+	}
+}
+
+procedure main() {
+    // Create threads for each philosopher
+    for i = 0 to N - 1:
+        create_thread(philosopher, i)
+
+    // Wait for all philosopher threads to complete
+    for i = 0 to N - 1:
+        join_thread(philosopher, i)
+}
