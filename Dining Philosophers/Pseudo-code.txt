@@ -1,0 +1,30 @@
+N = 5  										// Number of philosophers (and chopstick)
+chopstick[N]  								// Array representing chopsticks; each chopstick is a semaphore
+
+											// Initialize all chopsticks as available (value = 1)
+for i = 0 to N - 1 :
+	chopstick[i] = 1
+
+procedure philosopher(i) {
+	while(true) {
+		think() 
+
+		wait(chopstick[i])  				 // Pick up the left chopstick
+		wait(chopstick[(i + 1) % N]) 		 // Pick up the right chopstick (modulo ensures circular indexing)
+
+		eat()  
+
+		signal(chopstick[i])  				// Put down the left chopstick
+		signal(chopstick[(i + 1) % N])  	// Put down the right chopstick
+	}
+}
+
+procedure main() {
+    // Create threads for each philosopher
+    for i = 0 to N - 1:
+        create_thread(philosopher, i)
+
+    // Wait for all philosopher threads to complete
+    for i = 0 to N - 1:
+        join_thread(philosopher, i)
+}
