@@ -1,0 +1,46 @@
+BUFFER_SIZE = 5
+buffer[BUFFER_SIZE]
+in  = 0
+out = 0
+
+semaphore empty = BUFFER_SIZE
+semaphore  full = 0
+semaphore mutex = 1
+
+procedure producer(){
+  while (true){
+    item = produce_item()
+	
+		wait(empty)
+		wait(mutex)
+
+		buffer[in] = item
+		in = (in + 1) % BUFFER_SIZE
+
+		signal(mutex)
+		signal(empty)
+  }
+}
+
+procedure consumer(){
+	while(true){
+		wait(full)
+		wait(mutex)
+
+		item = buffer[out]
+		out = (out - 1) % BUFFER_SIZE
+
+		signal(mutex)
+		signal(full)
+
+		consume_item(item)
+	}
+}
+
+procedure main(){
+	create_thread(producer)
+	create_thread(consumer)
+
+	join_thread(producer)
+	join_thread(consumer)
+}
