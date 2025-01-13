@@ -1,0 +1,36 @@
+n = 5
+m = 4
+Available[m]
+Allocation[n][m]
+Request[n][m]
+
+function detectDeadlock() {
+	Work[m]   = Available 
+	Finish[n] = {false}
+
+	while (true){
+		found = false
+
+		for i = 0 to n - 1 {
+			if (Finish[i] == false && Request[i] <= Work) {
+				for j = 0 to m - 1 {
+					Work[j] = Work[j] + Allocation[i][j]
+				}
+				found = true 
+				Finish[i] = true 
+			}
+		}
+
+		if (found == false) {
+			break
+		}
+	}
+
+	for i = 0 to n - 1 {
+		if (Finish[i] == false) {
+			return true
+		}
+	}
+
+	return false
+}
