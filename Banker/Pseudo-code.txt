@@ -1,0 +1,63 @@
+n = 4
+m = 3
+Available[m]
+Max[n][m]
+Allocation[n][m]
+Need[n][m]
+
+function isSafe() {
+	Work[m]   = Available 
+	Finish[n] = { false } 
+
+	while (true) {
+		found = false 
+
+		for i = 0 to n - 1 {
+			if (Finish[i] == false && Need[i] <= Work) {
+				for j = 0 to m - 1 {
+					Work[j] = Work[j] + Allocation[i][j]
+				}
+			Finish[i] = true
+			found = true 
+			}
+		}
+		if (found == false){
+			break
+		}
+	}
+
+	for i = 0 to n - 1 {
+		if (Finish[i] == false) {
+			return true 
+		}
+	}
+
+	return true
+}
+
+function requestResources(pid, Request[m]) {
+	if (Request > Need[pid]){
+		return
+	}
+
+	if (Request > Available){
+		return
+	}
+
+	for i = 0 to m - 1 {
+		Available[i]	   = Available[i] 		- Request[i]
+		Allocation[pid][i] = Allocation[pid][i] + Request[i]
+		Need[pid][i] 	   = Need[pid][i] 		- Request[i]
+	}
+
+	if (isSafe()){
+		return
+	} else {
+		for i = 0 to m - 1 {
+			Available[i] 	   = Available[i]		+ Request[i] 
+			Allocation[pis][i] = Allocation[pid][i] - Request[i]
+			Need[pid][i] 	   = Need[pid][i]		+ Request[i]
+		}
+	}
+	return 
+}
